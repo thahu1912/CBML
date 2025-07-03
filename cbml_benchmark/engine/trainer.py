@@ -1,4 +1,3 @@
-
 import datetime
 import time
 
@@ -28,10 +27,11 @@ def do_train(
         device,
         checkpoint_period,
         arguments,
-        logger
+        logger,
+        wandb_logger=None
 ):
     logger.info("Start training")
-    meters = MetricLogger(delimiter="  ")
+    meters = MetricLogger(delimiter="  ", wandb_logger=wandb_logger)
     max_iter = len(train_loader)
 
     start_iter = arguments["iteration"]
@@ -57,12 +57,22 @@ def do_train(
             recall_curr.append(ret_metric.recall_k(8))
 
             print(recall_curr)
+            
+            # Log validation metrics to wandb
+            meters.log_validation_metrics(recall_curr, iteration)
 
             if recall_curr[0] > best_recall:
                 best_recall = recall_curr[0]
                 best_iteration = iteration
                 logger.info(f'Best iteration {iteration}: recall@1: {recall_curr[0]:.3f}')
                 checkpointer.save(f"best_model")
+                
+                # Log best model to wandb
+                if wandb_logger is not None:
+                    wandb_logger.log_model(
+                        f"{cfg.SAVE_DIR}/best_model.pth",
+                        aliases=["best"]
+                    )
             else:
                 logger.info(f'Recall@1 at iteration {iteration:06d}: recall@1: {recall_curr[0]:.3f}')
 
@@ -72,6 +82,9 @@ def do_train(
         data_time = time.time() - end
         iteration = iteration + 1
         arguments["iteration"] = iteration
+        
+        # Set iteration for wandb logging
+        meters.set_iteration(iteration)
 
         scheduler.step()
 
@@ -120,9 +133,23 @@ def do_train(
                     memory=torch.cuda.max_memory_allocated() / 1024.0 / 1024.0 / 1024.0,
                 )
             )
+            
+            # Log learning rate to wandb
+            if wandb_logger is not None:
+                wandb_logger.log_metrics({
+                    'train/learning_rate': optimizer.param_groups[0]["lr"],
+                    'train/memory_gb': torch.cuda.max_memory_allocated() / 1024.0 / 1024.0 / 1024.0
+                }, step=iteration)
 
         if iteration % checkpoint_period == 0:
             checkpointer.save("model_{:06d}".format(iteration))
+            
+            # Log checkpoint to wandb
+            if wandb_logger is not None:
+                wandb_logger.log_model(
+                    f"{cfg.SAVE_DIR}/model_{iteration:06d}.pth",
+                    aliases=[f"checkpoint_{iteration}"]
+                )
 
     total_training_time = time.time() - start_training_time
     total_time_str = str(datetime.timedelta(seconds=total_training_time))
@@ -133,11 +160,21 @@ def do_train(
     )
 
     logger.info(f"Best iteration: {best_iteration :06d} | best recall {best_recall} ")
+    
+    # Log final summary to wandb
+    if wandb_logger is not None:
+        wandb_logger.log_metrics({
+            'final/best_iteration': best_iteration,
+            'final/best_recall@1': best_recall,
+            'final/total_training_time': total_training_time,
+            'final/avg_time_per_iter': total_training_time / max_iter
+        })
 
 def do_test(
         model,
         val_loader,
-        logger
+        logger,
+        wandb_logger=None
 ):
     logger.info("Start testing")
     model.eval()
@@ -155,3 +192,12 @@ def do_test(
     recall_curr.append(ret_metric.recall_k(8))
 
     print(recall_curr)
+    
+    # Log test metrics to wandb
+    if wandb_logger is not None:
+        wandb_logger.log_metrics({
+            'test/recall@1': recall_curr[0],
+            'test/recall@2': recall_curr[1],
+            'test/recall@4': recall_curr[2],
+            'test/recall@8': recall_curr[3]
+        })

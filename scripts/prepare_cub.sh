@@ -2,7 +2,7 @@
 set -e
 
 CUB_ROOT='resource/datasets/CUB_200_2011/'
-CUB_DATA='http://www.vision.caltech.edu.s3-us-west-2.amazonaws.com/visipedia-data/CUB-200-2011/CUB_200_2011.tgz'
+CUB_DATA='https://data.caltech.edu/records/65de6-vp158/files/CUB_200_2011.tgz'
 
 
 if [[ ! -d "${CUB_ROOT}" ]]; then
@@ -15,6 +15,6 @@ if [[ ! -d "${CUB_ROOT}" ]]; then
 fi
 # Generate train.txt and test.txt splits
 echo "Generating the train.txt/test.txt split files"
-python3 scripts/split_cub_for_cbml_loss.py
+python scripts/split_cub_for_cbml_loss.py
 
 

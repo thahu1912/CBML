@@ -1,4 +1,3 @@
-
 from yacs.config import CfgNode as CN
 from .model_path import MODEL_PATH
 
@@ -180,3 +179,10 @@ _C.LOGGER.STREAM = 'stdout'
 _C.VALIDATION = CN()
 _C.VALIDATION.VERBOSE = 200
 _C.VALIDATION.IS_VALIDATION = True
+
+# WANDB Configuration
+_C.WANDB = CN()
+_C.WANDB.ENABLED = False
+_C.WANDB.PROJECT_NAME = "cbml-benchmark"
+_C.WANDB.ENTITY = None  # Your wandb username or team name
+_C.WANDB.WATCH_MODEL = True  # Whether to watch model gradients

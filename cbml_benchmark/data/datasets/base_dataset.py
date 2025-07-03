@@ -49,7 +49,7 @@ class BaseDataSet(Dataset):
 
     def __getitem__(self, index):
         path = self.path_list[index]
-        img_path = os.path.join(self.root, path)
+        img_path = os.path.join(self.root, "images", path)
         label = self.label_list[index]
 
         img = read_image(img_path, mode=self.mode)
