@@ -3,6 +3,7 @@ set -e
 
 # Prepare Stanford Online Products (SOP) dataset for CBML training
 SOP_ROOT='resource/datasets/Stanford_Online_Products/'
+SOP_DATA='https://www.dropbox.com/scl/fi/7icj466ds04ex7rd7kxxs/online_products.tar?rlkey=c2tp644h3uzui38tpu3l8z2uq&e=1&dl=0'
 
 echo "Preparing Stanford Online Products dataset..."
 
@@ -14,13 +15,13 @@ pushd resource/datasets
 if [ ! -d "Stanford_Online_Products" ]; then
     echo "Downloading Stanford Online Products dataset..."
     # Updated download link for SOP dataset
-    gdown 1AtTQv-5ATXYHbVO-dVuQqoUqbVZT1auV
+    wget ${SOP_DATA}
     
     # Extract files
-    unzip Stanford_Online_Products.zip
+    tar -xvf online_products.tar
     
     # Clean up
-    rm Stanford_Online_Products.zip
+    rm online_products.tar
 fi
 
 popd
