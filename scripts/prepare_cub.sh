@@ -11,6 +11,7 @@ if [[ ! -d "${CUB_ROOT}" ]]; then
     echo "Downloading CUB_200_2011 data-set..."
     wget ${CUB_DATA}
     tar -zxf CUB_200_2011.tgz
+    rm CUB_200_2011.tgz
     popd
 fi
 # Generate train.txt and test.txt splits

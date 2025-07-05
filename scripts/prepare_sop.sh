@@ -9,25 +9,18 @@ echo "Preparing Stanford Online Products dataset..."
 
 # Create directories
 mkdir -p resource/datasets
-pushd resource/datasets
 
-# Download SOP dataset
-if [ ! -d "Stanford_Online_Products" ]; then
+if [[ ! -d "${SOP_ROOT}" ]]; then
+    mkdir -p resource/datasets
+    pushd resource/datasets
     echo "Downloading Stanford Online Products dataset..."
-    # Updated download link for SOP dataset
-    wget ${SOP_DATA}
-    
-    # Extract files
+    wget -O online_products.tar "${SOP_DATA}"
     tar -xvf online_products.tar
-    
-    # Clean up
     rm online_products.tar
+    popd
 fi
 
-popd
 
-echo "Stanford Online Products dataset prepared successfully!"
-
-# Generate train.txt and test.txt splits
 echo "Generating the train.txt/test.txt split files"
-python scripts/split_sop_for_cbml_loss.py 
+python scripts/split_sop_for_cbml_loss.py
+
