@@ -6,3 +6,4 @@ pytest
 Pillow
 torchvision
 wandb>=0.15.0
+scipy
